@@ -19,7 +19,7 @@ jobs:
           run: |
             echo "GH_REPO_LC=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
           env:
-            GITHUB_REPOSITRY: ${{ github.repository }}
+            GITHUB_REPOSITORY: ${{ github.repository }}
 
         - name: Checkout code
           uses: actions/checkout@v3
@@ -62,7 +62,7 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Set lower case Github repository name
-        run:
+        run: |
           echo "GH_REPO_LC=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -75,8 +75,10 @@ jobs:
             # Converting to lower case and replacing '/' with '-'
             BRANCH_NAME_LOWER=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | sed 's|/|-|g')
 
+            echo "BRANCH_NAME_LOWER=$BRANCH_NAME_LOWER"
+
             # Creating new environment variable
-            echo "TAG_NAME=$BRANCH_NAME_LOWER" >>$GITHUB_ENV 
+            echo "TAG_NAME=$BRANCH_NAME_LOWER" >> $GITHUB_ENV 
 
         env:
             GITHUB_REF: ${{ github.ref_name }}
@@ -84,7 +86,7 @@ jobs:
       - name: Trivy Scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ env.GH_REPO_LC }}:${{ github.ref_name }}
+          image-ref: ghcr.io/${{ env.GH_REPO_LC }}:${{ env.TAG_NAME }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
